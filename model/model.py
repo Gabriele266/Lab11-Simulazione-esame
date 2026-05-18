@@ -1,3 +1,5 @@
+import copy
+
 from database.DAO import DAO
 import networkx as nx
 from collections import defaultdict
@@ -25,7 +27,7 @@ class Model:
 
         # update best solution
         if len(partial) > len(self._bestPath):
-            self._bestPath = list(partial)
+            self._bestPath = copy.deepcopy(partial)
 
         current = partial[-1]
 
