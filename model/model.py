@@ -77,9 +77,9 @@ class Model:
 
                 weight = pop_a + pop_b
 
-                if pop_a > pop_b:
+                if pop_a < pop_b:
                     self._graph.add_edge(self._idMap[a], self._idMap[b], weight=weight)
-                elif pop_a < pop_b:
+                elif pop_a > pop_b:
                     self._graph.add_edge(self._idMap[b], self._idMap[a], weight=weight)
                 else:
                     self._graph.add_edge(self._idMap[a], self._idMap[b], weight=weight)
