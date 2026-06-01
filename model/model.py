@@ -20,6 +20,8 @@ class Model:
             partial.append(v)
 
             self._ricorsione(partial, data["weight"])
+            partial.pop()
+
 
         return self._bestPath
 
@@ -36,7 +38,7 @@ class Model:
             weight = data["weight"]
 
             # strictly decreasing weights
-            if weight < lastWeight:
+            if weight > lastWeight:
 
                 # simple path
                 if successor not in partial:
