@@ -1,3 +1,5 @@
+import itertools
+
 import flet as ft
 import networkx as nx
 
@@ -32,16 +34,15 @@ class Controller:
         # carico la lista di autori che hanno fatto almeno un brano con il genere giusto
         artists = dao.load_artists_info(self._model.selected_genre_id)
         graph = nx.DiGraph()
+        graph.add_nodes_from(artists)
 
-        for a in artists:
-            for b in artists:
-                if a != b:
-                    customers_a = dao.load_customers_for_artist(a.ArtistId)
-                    customers_b = dao.load_customers_for_artist(b.ArtistId)
+        for a, b in itertools.combinations(artists, 2):
+            customers_a = dao.load_customers_for_artist(a.ArtistId)
+            customers_b = dao.load_customers_for_artist(b.ArtistId)
 
-                    intersect = customers_b & customers_a
-                    if len(intersect) > 0:
-                        self.__add_edge_between(a, b, graph)
+            intersect = customers_b & customers_a
+            if len(intersect) > 0:
+                self.__add_edge_between(a, b, graph)
 
         print("Creazione grafo terminata")
         self._model.graph = graph
