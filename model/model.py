@@ -1,3 +1,4 @@
 class Model:
+
     def __init__(self):
-        pass
+        self.selected_genre_id: int | None = None       # Id correntemente selezionato nel dropdown genere
