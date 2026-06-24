@@ -41,11 +41,53 @@ class Controller:
 
                     intersect = customers_b & customers_a
                     if len(intersect) > 0:
-                        print(f"Tra l'artista {a.ArtistId} e {b.ArtistId} esiste una connessione")
                         self.__add_edge_between(a, b, graph)
 
-        print(f"Il grafo creato ha {graph.number_of_nodes()} nodi e {graph.number_of_edges()} archi")
+        print("Creazione grafo terminata")
+        self._model.graph = graph
+        self.__show_results__()
         dao.close()
+
+    def __show_results__(self):
+        graph: nx.DiGraph = self._model.graph
+        txt_result: ft.ListView = self._view.txt_result
+        most_influent = self.__search_most_influent_artist()
+
+        txt_result.controls = [
+            ft.Text(
+                f"Il grafo creato ha {graph.number_of_nodes()} nodi e {graph.number_of_edges()} archi"
+            ),
+            ft.Text(
+                f"L'artista con maggiore influenza è {most_influent.Name} con influenza {graph.nodes[most_influent]["influence"]}"
+            )
+        ]
+        self._view.update_page()
+
+    def __search_most_influent_artist(self)-> Artist:
+        graph: nx.DiGraph = self._model.graph
+
+        max_influence = None
+        max_artist = None
+
+        for artist in graph.nodes:
+            pred = graph.predecessors(artist)
+            succ = graph.successors(artist)
+            a = 0
+            for p in pred:
+                a += graph.edges[p, artist]["weight"]
+
+            b = 0
+            for p in succ:
+                b += graph.edges[artist, p]["weight"]
+
+            influence = b - a
+            graph.nodes[artist]["influence"] = influence
+            print(f"L'artista {artist} ha influenza {graph.nodes[artist]["influence"]}")
+            if max_influence is None or influence > max_influence:
+                max_influence = influence
+                max_artist = artist
+
+        return max_artist
 
     def __add_edge_between(self, a: Artist, b: Artist, graph: nx.DiGraph):
         if a.popularity > b.popularity:

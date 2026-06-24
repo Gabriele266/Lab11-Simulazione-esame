@@ -43,7 +43,6 @@ class DAO:
                     ArtistId=row["ArtistId"],
                     Name=row["Name"],
                     popularity=0,
-                    Influence=-1
                 ))
 
         cursor.close()
