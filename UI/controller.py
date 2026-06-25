@@ -88,25 +88,17 @@ class Controller:
             self._view.create_alert("Selezionare un artista dal menu")
             return
 
-        max_path = self._model.get_max_path()
+        max_path = self._model.get_max_path_v2()
         if not max_path:
             self._view.create_alert("Non ho trovato nessun cammino che rispetti i criteri")
             return
 
-        nodes_in_path = []
-        for edge in max_path:
-            if edge[0] not in nodes_in_path:
-                nodes_in_path.append(edge[0])
-
-            if edge[1] not in nodes_in_path:
-                nodes_in_path.append(edge[1])
-
         txt_result: ft.ListView = self._view.txt_result
         txt_result.controls = [
-            ft.Text(f"Percorso di massima lunghezza {len(nodes_in_path)}")
+            ft.Text(f"Percorso di massima lunghezza {len(max_path)}")
         ]
 
-        for node in nodes_in_path:
+        for node in max_path:
             txt_result.controls.append(ft.Text(node.Name))
 
         self._view.update_page()

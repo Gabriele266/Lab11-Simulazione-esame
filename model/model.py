@@ -4,6 +4,7 @@ import networkx as nx
 
 from database.DAO import DAO
 from model.Artist import Artist
+from model.RecursivePath import RecursivePath
 
 
 class Model:
@@ -129,3 +130,14 @@ class Model:
                 return False        # Ho trovato un arco che invece di avere peso maggiore, ha peso inferiore, quindi il cammino non va bene
 
         return True
+
+    def get_max_path_v2(self) -> list | bool:
+        source_id = self.selected_artist_id
+        source_artist = list(filter(lambda t: t.ArtistId == source_id, self.artists_of_genre))[0]
+        r = RecursivePath(self.graph, source_artist)
+        res = r.get_max_path_vricorsiva()
+
+        if res is not None:
+            return res
+
+        return False
