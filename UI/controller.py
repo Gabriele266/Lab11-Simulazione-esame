@@ -2,6 +2,7 @@ import itertools
 
 import flet as ft
 import networkx as nx
+from mysql.connector import DatabaseError
 
 from database.DAO import DAO
 from database.DB_connect import DBConnect
@@ -30,13 +31,22 @@ class Controller:
         self._model.selected_genre_id = event.data
 
     def handleCreaGrafo(self, e):
-        self._model.create_graph()
-        self.__show_results__()
+        if self._model.selected_genre_id is None:
+            self._view.create_alert("Nessun genere selezionato, sceglierne uno dal menu a tendina. ")
+            return
+
+        try:
+            self._model.create_graph()
+            self.__show_results__()
+        except DatabaseError as e:
+            print(f"Errore durante la costruzione del grafo {e}")
+            self._view.create_alert(e.msg)
 
     def __show_results__(self):
         graph: nx.DiGraph = self._model.graph
         txt_result: ft.ListView = self._view.txt_result
-        most_influent = self.__search_most_influent_artist()
+        most_influent = self._model.search_most_influent_artist()
+        ordered = self._model.get_ordered_edges()
 
         txt_result.controls = [
             ft.Text(
@@ -44,35 +54,15 @@ class Controller:
             ),
             ft.Text(
                 f"L'artista con maggiore influenza è {most_influent.Name} con influenza {graph.nodes[most_influent]["influence"]}"
-            )
+            ),
         ]
+
+        for o in ordered[0:5]:
+            txt_result.controls.append(
+                ft.Text(f"{o[0].Name} -> {o[1].Name} con peso {o[2]["weight"]}")
+            )
+
         self._view.update_page()
-
-    def __search_most_influent_artist(self)-> Artist:
-        graph: nx.DiGraph = self._model.graph
-
-        max_influence = None
-        max_artist = None
-
-        for artist in graph.nodes:
-            pred = graph.predecessors(artist)
-            succ = graph.successors(artist)
-            a = 0
-            for p in pred:
-                a += graph.edges[p, artist]["weight"]
-
-            b = 0
-            for p in succ:
-                b += graph.edges[artist, p]["weight"]
-
-            influence = b - a
-            graph.nodes[artist]["influence"] = influence
-            print(f"L'artista {artist} ha influenza {graph.nodes[artist]["influence"]}")
-            if max_influence is None or influence > max_influence:
-                max_influence = influence
-                max_artist = artist
-
-        return max_artist
 
     def handleCammino(self,e):
         pass

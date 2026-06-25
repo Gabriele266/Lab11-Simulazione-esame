@@ -101,7 +101,9 @@ WHERE C.CustomerId IN (
         cursor = self.connection.cursor(dictionary = True)
         data = tuple([genre_id])
         cursor.execute(query, data)
-        return cursor.fetchall()
+        res = cursor.fetchall()
+        cursor.close()
+        return res
 
     def close(self):
         self.connection.close()

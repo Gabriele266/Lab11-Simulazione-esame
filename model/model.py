@@ -37,6 +37,7 @@ class Model:
                 self.__add_edge_between(a, b, graph)
 
         self.graph = graph
+        dao.close()
 
     def __add_edge_between(self, a: Artist, b: Artist, graph: nx.DiGraph):
         if a.popularity > b.popularity:
@@ -55,3 +56,35 @@ class Model:
             pop += r["conteggio_track"]
 
         return pop
+
+
+    def search_most_influent_artist(self)-> Artist:
+        graph: nx.DiGraph = self.graph
+
+        max_influence = None
+        max_artist = None
+
+        for artist in graph.nodes:
+            pred = graph.predecessors(artist)
+            succ = graph.successors(artist)
+            a = 0
+            for p in pred:
+                a += graph.edges[p, artist]["weight"]
+
+            b = 0
+            for p in succ:
+                b += graph.edges[artist, p]["weight"]
+
+            influence = b - a
+            graph.nodes[artist]["influence"] = influence
+            print(f"L'artista {artist} ha influenza {graph.nodes[artist]["influence"]}")
+            if max_influence is None or influence > max_influence:
+                max_influence = influence
+                max_artist = artist
+
+        return max_artist
+
+    def get_ordered_edges(self):
+        print(list(self.graph.edges(data=True)))
+        return sorted(list(self.graph.edges(data=True)),
+                      key=lambda t: t[2]["weight"], reverse=True)
