@@ -1,4 +1,5 @@
 import itertools
+from typing import Any
 
 import flet as ft
 import networkx as nx
@@ -27,8 +28,23 @@ class Controller:
         ]
         self._view.update_page()
 
+    def fillDDArtist(self):
+        availableArtists: list[Artist] | list[Any] = self._model.artists_of_genre or []
+        dropdown: ft.Dropdown = self._view._ddArtist
+        dropdown.options = [
+           ft.dropdown.Option(
+               key=str(artist.ArtistId),
+               text=artist.Name
+           ) for artist in availableArtists
+        ]
+
+        self._view.update_page()
+
     def handleGenreDropdownSelect(self, event):
         self._model.selected_genre_id = event.data
+        self._model.load_available_artists()
+        self.fillDDArtist()
+        self._view.update_page()
 
     def handleCreaGrafo(self, e):
         if self._model.selected_genre_id is None:
@@ -41,6 +57,9 @@ class Controller:
         except DatabaseError as e:
             print(f"Errore durante la costruzione del grafo {e}")
             self._view.create_alert(e.msg)
+
+    def handle_artist_select(self, event):
+        self._model.selected_artist_id = int(event.data)
 
     def __show_results__(self):
         graph: nx.DiGraph = self._model.graph
@@ -65,4 +84,29 @@ class Controller:
         self._view.update_page()
 
     def handleCammino(self,e):
-        pass
+        if self._model.selected_artist_id is None:
+            self._view.create_alert("Selezionare un artista dal menu")
+            return
+
+        max_path = self._model.get_max_path()
+        if not max_path:
+            self._view.create_alert("Non ho trovato nessun cammino che rispetti i criteri")
+            return
+
+        nodes_in_path = []
+        for edge in max_path:
+            if edge[0] not in nodes_in_path:
+                nodes_in_path.append(edge[0])
+
+            if edge[1] not in nodes_in_path:
+                nodes_in_path.append(edge[1])
+
+        txt_result: ft.ListView = self._view.txt_result
+        txt_result.controls = [
+            ft.Text(f"Percorso di massima lunghezza {len(nodes_in_path)}")
+        ]
+
+        for node in nodes_in_path:
+            txt_result.controls.append(ft.Text(node.Name))
+
+        self._view.update_page()
